@@ -526,6 +526,13 @@ const BlobTransform = React.memo(() => {
 
     ray.intersectPlane(plane, hitpoint)
 
+    var offset = -0.7
+    hitpoint.set(
+      hitpoint.x + plane.normal.x * offset,
+      hitpoint.y + plane.normal.y * offset,
+      hitpoint.z + plane.normal.z * offset
+    )
+
     dbg.position.copy(hitpoint)
     normal.copy(camera.position)
     normal.normalize()
@@ -608,6 +615,14 @@ const BlobTransform = React.memo(() => {
     material.time.value = state.clock.elapsedTime
 
     var { gl } = state
+
+    orthographicCamera.left = -10.25 * 0.5
+    orthographicCamera.right = 10.25 * 0.5
+    orthographicCamera.top = 10.25 * 0.5
+    orthographicCamera.bottom = -10.25 * 0.5
+    orthographicCamera.far = 100.0
+    orthographicCamera.near = -100.0
+    orthographicCamera.updateProjectionMatrix()
 
     time = Math.max(time, 0.0)
     objects.empties.forEach((element: any) => {
