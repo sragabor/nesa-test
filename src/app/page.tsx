@@ -27,34 +27,21 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <div
-          style={{
-            background: 'black',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center'
-          }}
-        >
-          <Token></Token>
-          <div
-            className="controller"
-            style={{
-              overflow: 'scroll',
-              position: 'absolute',
-              width: '100%',
-              background: 'transparent',
-              height: '100%'
-            }}
-            onMouseMove={onMouseMove}
-            onScroll={onScroll}
-          >
-            <div style={{ width: '100%', height: `${scrollSize * 100}%` }}></div>
-          </div>
-        </div>
+    <main className="flex min-h-screen flex-col items-center justify-between">
+      <Token></Token>
+      <div
+        className="controller"
+        style={{
+          overflow: 'scroll',
+          position: 'absolute',
+          width: '100%',
+          background: 'transparent',
+          height: '100%'
+        }}
+        onMouseMove={onMouseMove}
+        onScroll={onScroll}
+      >
+        <div style={{ width: '100%', height: `${scrollSize * 100}%` }}></div>
       </div>
     </main>
   )

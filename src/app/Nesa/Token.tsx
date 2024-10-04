@@ -863,9 +863,9 @@ const Token = React.memo(() => {
     <div
       style={{
         background: 'black',
-        /* borderWidth: 2, borderColor: 'blue',*/ position: 'relative',
-        width: '100%',
-        height: '100%'
+        /* borderWidth: 2, borderColor: 'blue',*/ position: 'absolute',
+        height: '100%',
+        aspectRatio: 1.0
       }}
     >
       <p style={{ position: 'absolute', top: 0, left: 0 }}>
