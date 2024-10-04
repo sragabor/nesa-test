@@ -8,7 +8,8 @@
         "args": "after-used",
         "caughtErrors": "none",
         "ignoreRestSiblings": true,
-        "vars": "all"
+        "vars": "all",
+        "argsIgnorePattern": "^_"
       }
     ]
   }
