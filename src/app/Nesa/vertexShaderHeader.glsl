@@ -15,9 +15,11 @@ uniform float scroll;
 uniform float ballScroll;
 
 
-uniform float selectedSegment;
+uniform float visibleLayer;
 uniform float selectionTime;
 uniform float sectionSelection[6];
+
+uniform float waveStrength;
 
 //float sectionSelection[6];
 

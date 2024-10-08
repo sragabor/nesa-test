@@ -26,12 +26,7 @@ gl_FragColor = mix(mix(texture2D( matcap3, uv ), texture2D( matcap2, uv ), vBall
 //gl_FragColor = vec4(z, z, z, 1.0);
 
 
-//gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+//gl_FragColor = vec4(vBallCenters.y, vBallCenters.y, vBallCenters.y, 1.0);
 
 
 gl_FragColor.a = vBallCenters.x;
-
-
-
-
-

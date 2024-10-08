@@ -40,15 +40,33 @@ import Layer1Arrow5 from './export/Layer 1 Arrow 5.obj'
 import Layer1Arrow6 from './export/Layer 1 Arrow 6.obj'
 import Layer1Arrow7 from './export/Layer 1 Arrow 7.obj'
 
+import Layer1Arrow1Line from './export/Layer 1 Arrow Dashed 1.obj'
+import Layer1Arrow2Line from './export/Layer 1 Arrow Dashed 2.obj'
+import Layer1Arrow3Line from './export/Layer 1 Arrow Dashed 3.obj'
+import Layer1Arrow4Line from './export/Layer 1 Arrow Dashed 4.obj'
+import Layer1Arrow5Line from './export/Layer 1 Arrow Dashed 5.obj'
+import Layer1Arrow6Line from './export/Layer 1 Arrow Dashed 6.obj'
+import Layer1Arrow7Line from './export/Layer 1 Arrow Dashed 7.obj'
+
 import Layer2Arrow1 from './export/Layer 2 Arrow 1.obj'
 import Layer2Arrow2 from './export/Layer 2 Arrow 2.obj'
 import Layer2Arrow3 from './export/Layer 2 Arrow 3.obj'
 import Layer2Arrow4 from './export/Layer 2 Arrow 4.obj'
 import Layer2Arrow5 from './export/Layer 2 Arrow 5.obj'
 
+import Layer2Arrow1Line from './export/Layer 2 Arrow Dashed 1.obj'
+import Layer2Arrow2Line from './export/Layer 2 Arrow Dashed 2.obj'
+import Layer2Arrow3Line from './export/Layer 2 Arrow Dashed 3.obj'
+import Layer2Arrow4Line from './export/Layer 2 Arrow Dashed 4.obj'
+import Layer2Arrow5Line from './export/Layer 2 Arrow Dashed 5.obj'
+
 import Layer1TOPArrow from './export/Layer 1 TOP Arrow.obj'
 import Layer2TOPArrow from './export/Layer 2 TOP Arrow.obj'
 import Layer3TOPArrow from './export/Layer 3 TOP Arrow.obj'
+
+import Layer1TOPArrowLine from './export/Layer 1 TOP Arrow Dashed.obj'
+import Layer2TOPArrowLine from './export/Layer 2 TOP Arrow Dashed.obj'
+import Layer3TOPArrowLine from './export/Layer 3 TOP Arrow Dashed.obj'
 
 import { clamp, lerp } from 'three/src/math/MathUtils.js'
 
@@ -211,7 +229,7 @@ class UVAnimMaterial extends THREE.ShaderMaterial {
 }
 
 export class MyMaterial extends THREE.MeshMatcapMaterial {
-  selectedSegment: THREE.IUniform
+  visibleLayer: THREE.IUniform
   selectionTime: THREE.IUniform
 
   selection: THREE.IUniform
@@ -227,7 +245,7 @@ export class MyMaterial extends THREE.MeshMatcapMaterial {
   constructor() {
     super()
 
-    this.selectedSegment = new THREE.Uniform(-1.0)
+    this.visibleLayer = new THREE.Uniform(-1.0)
     this.selectionTime = new THREE.Uniform(1.0)
 
     this.selection = new THREE.Uniform(new THREE.Vector3(0, 0, 0))
@@ -250,7 +268,7 @@ export class MyMaterial extends THREE.MeshMatcapMaterial {
     //    console.log(parameters.vertexShader)
     parameters.mapUv = `uv0`
 
-    parameters.uniforms['selectedSegment'] = this.selectedSegment
+    parameters.uniforms['visibleLayer'] = this.visibleLayer
     parameters.uniforms['selectionTime'] = this.selectionTime
     parameters.uniforms['selection'] = this.selection
 
@@ -265,7 +283,7 @@ export class MyMaterial extends THREE.MeshMatcapMaterial {
 
     parameters.vertexShader = `${vertexShaderHeader}\n${parameters.vertexShader}\n`
 
-    parameters.vertexShader = `#define WAVES (vec3(0.0, 1.0, 0.0) * 0.04 * sin(length(ballCenters.xyz + vec3(3.0, 3.0, 0.0) * 1.6) * 2.0 + time * 0.85))\n${parameters.vertexShader}\n`
+    parameters.vertexShader = `#define WAVES (vec3(0.0, 1.0, 0.0) * 0.04 * waveStrength * sin(length(ballCenters.xyz + vec3(3.0, 3.0, 0.0) * 1.6) * 2.0 + time * 0.85))\n${parameters.vertexShader}\n`
 
     parameters.vertexShader = parameters.vertexShader.replace(
       '#include <fog_vertex>',
@@ -321,6 +339,7 @@ var layers = quads.map((quad, quadi) => {
 
       for (var pos of points.vertices) {
         addSphere(new THREE.Vector3(pos[0], pos[1], pos[2]), 0, 0.0)
+        ballSections.push(quadi)
       }
     }
   }
@@ -370,25 +389,53 @@ class Arrow {
   progress: number
   element: any
 
-  constructor(data: string, element: any) {
-    var geom = new THREE.BufferGeometry()
+  constructor(headData: string, lineData: string, element: any) {
+    var headGeom = new THREE.BufferGeometry()
+    var lineGeom = new THREE.BufferGeometry()
 
-    var points = JSON.parse(data)
+    {
+      var points = JSON.parse(headData)
 
-    this.progress = 0.0
-    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(points.vertices), 3))
-    geom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs), 2))
+      this.progress = 0.0
+      headGeom.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(points.vertices), 3)
+      )
+      headGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs), 2))
 
-    this.uvmax = 0.0
-    points.uvs.forEach((uv: number, i: number) => {
-      if (i % 2 == 0) {
-        if (uv > this.uvmax) {
-          this.uvmax = uv
+      this.uvmax = 0.0
+      points.uvs.forEach((uv: number, i: number) => {
+        if (i % 2 == 0) {
+          if (uv > this.uvmax) {
+            this.uvmax = uv
+          }
         }
-      }
-    })
+      })
 
-    geom.setIndex(points.triangles)
+      headGeom.setIndex(points.triangles)
+    }
+
+    {
+      var points = JSON.parse(lineData)
+
+      this.progress = 0.0
+      lineGeom.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(points.vertices), 3)
+      )
+      lineGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs), 2))
+
+      this.uvmax = 0.0
+      points.uvs.forEach((uv: number, i: number) => {
+        if (i % 2 == 0) {
+          if (uv > this.uvmax) {
+            this.uvmax = uv
+          }
+        }
+      })
+
+      lineGeom.setIndex(points.triangles)
+    }
 
     //var ball = new TokenMesh(new THREE.IcosahedronGeometry(1.0, 0), material);
 
@@ -427,8 +474,8 @@ class Arrow {
 
     this.parent = new THREE.Mesh()
 
-    this.head = new THREE.Mesh(geom, headMaterial)
-    this.line = new THREE.Mesh(geom, lineMaterial)
+    this.head = new THREE.Mesh(headGeom, headMaterial)
+    this.line = new THREE.Mesh(lineGeom, lineMaterial)
 
     this.line.renderOrder = 1000.0
     this.head.renderOrder = 1000.0
@@ -575,16 +622,30 @@ const BlobTransform = React.memo(() => {
 
     var a = 0.0
 
+    var visibleLayer = 0.0
+
     if (s < 35) {
+      visibleLayer = 0.0
+
       s = clamp((s - 0.0) / 35.0, 0.0, 1.0)
       a = 0.0
     } else if (s < 80) {
+      visibleLayer = 0.0 + clamp((s - 40.0) / 30.0, 0.0, 1.0)
+
       s = clamp((s - 37.0) / (80.0 - 37.0), 0.0, 1.0)
       a = 10.0
     } else {
+      visibleLayer = 1.0 + clamp((s - 105.0) / 30.0, 0.0, 1.0)
+
       s = clamp((s - 103.0) / (137.0 - 103.0), 0.0, 1.0)
       a = 20.0
     }
+
+    material.ballScroll.value = lerp(-(1 / 0.3) + a, size + a, clamp(s, 0.0, 1.0)) // * 106 * 4.0 * 2.0 * (1.0 / 3.0);
+
+    material.visibleLayer.value = visibleLayer
+
+    material.time.value = state.clock.elapsedTime
 
     Layer1Arrow4Obj.setProgress(clamp((timeline.animTime - 1.0) / (20.0 - 1.0), 0.0, 1.0))
 
@@ -610,9 +671,6 @@ const BlobTransform = React.memo(() => {
     Layer2TOPArrowObj.setProgress(clamp((timeline.animTime - 34.0) / (70.0 - 34.0), 0.0, 1.0))
 
     Layer3TOPArrowObj.setProgress(clamp((timeline.animTime - 103.0) / (135.0 - 103.0), 0.0, 1.0))
-    material.ballScroll.value = lerp(-(1 / 0.3) + a, size + a, clamp(s, 0.0, 1.0)) // * 106 * 4.0 * 2.0 * (1.0 / 3.0);
-
-    material.time.value = state.clock.elapsedTime
 
     var { gl } = state
 
@@ -720,50 +778,50 @@ const Nesa = React.memo(() => {
     objects.empties.forEach((element: any) => {
       //  scene.add(element.dbg)
       if (element.name == 'Layer 1 Arrow 1') {
-        Layer1Arrow1Obj = new Arrow(Layer1Arrow1, element)
+        Layer1Arrow1Obj = new Arrow(Layer1Arrow1, Layer1Arrow1Line, element)
         element.dbg = Layer1Arrow1Obj.parent
       } else if (element.name == 'Layer 1 Arrow 2') {
-        Layer1Arrow2Obj = new Arrow(Layer1Arrow2, element)
+        Layer1Arrow2Obj = new Arrow(Layer1Arrow2, Layer1Arrow2Line, element)
         element.dbg = Layer1Arrow2Obj.parent
       } else if (element.name == 'Layer 1 Arrow 3') {
-        Layer1Arrow3Obj = new Arrow(Layer1Arrow3, element)
+        Layer1Arrow3Obj = new Arrow(Layer1Arrow3, Layer1Arrow3Line, element)
         element.dbg = Layer1Arrow3Obj.parent
       } else if (element.name == 'Layer 1 Arrow 4') {
-        Layer1Arrow4Obj = new Arrow(Layer1Arrow4, element)
+        Layer1Arrow4Obj = new Arrow(Layer1Arrow4, Layer1Arrow4Line, element)
         element.dbg = Layer1Arrow4Obj.parent
       } else if (element.name == 'Layer 1 Arrow 5') {
-        Layer1Arrow5Obj = new Arrow(Layer1Arrow5, element)
+        Layer1Arrow5Obj = new Arrow(Layer1Arrow5, Layer1Arrow5Line, element)
         element.dbg = Layer1Arrow5Obj.parent
       } else if (element.name == 'Layer 1 Arrow 6') {
-        Layer1Arrow6Obj = new Arrow(Layer1Arrow6, element)
+        Layer1Arrow6Obj = new Arrow(Layer1Arrow6, Layer1Arrow6Line, element)
         element.dbg = Layer1Arrow6Obj.parent
       } else if (element.name == 'Layer 1 Arrow 7') {
-        Layer1Arrow7Obj = new Arrow(Layer1Arrow7, element)
+        Layer1Arrow7Obj = new Arrow(Layer1Arrow7, Layer1Arrow7Line, element)
         element.dbg = Layer1Arrow7Obj.parent
         /* */
       } else if (element.name == 'Layer 2 Arrow 1') {
-        Layer2Arrow1Obj = new Arrow(Layer2Arrow1, element)
+        Layer2Arrow1Obj = new Arrow(Layer2Arrow1, Layer2Arrow1Line, element)
         element.dbg = Layer2Arrow1Obj.parent
       } else if (element.name == 'Layer 2 Arrow 2') {
-        Layer2Arrow2Obj = new Arrow(Layer2Arrow2, element)
+        Layer2Arrow2Obj = new Arrow(Layer2Arrow2, Layer2Arrow2Line, element)
         element.dbg = Layer2Arrow2Obj.parent
       } else if (element.name == 'Layer 2 Arrow 3') {
-        Layer2Arrow3Obj = new Arrow(Layer2Arrow3, element)
+        Layer2Arrow3Obj = new Arrow(Layer2Arrow3, Layer2Arrow3Line, element)
         element.dbg = Layer2Arrow3Obj.parent
       } else if (element.name == 'Layer 2 Arrow 4') {
-        Layer2Arrow4Obj = new Arrow(Layer2Arrow4, element)
+        Layer2Arrow4Obj = new Arrow(Layer2Arrow4, Layer2Arrow4Line, element)
         element.dbg = Layer2Arrow4Obj.parent
       } else if (element.name == 'Layer 2 Arrow 5') {
-        Layer2Arrow5Obj = new Arrow(Layer2Arrow5, element)
+        Layer2Arrow5Obj = new Arrow(Layer2Arrow5, Layer2Arrow5Line, element)
         element.dbg = Layer2Arrow5Obj.parent
       } else if (element.name == 'Layer 1 TOP Arrow') {
-        Layer1TOPArrowObj = new Arrow(Layer1TOPArrow, element)
+        Layer1TOPArrowObj = new Arrow(Layer1TOPArrow, Layer1TOPArrowLine, element)
         element.dbg = Layer1TOPArrowObj.parent
       } else if (element.name == 'Layer 2 TOP Arrow') {
-        Layer2TOPArrowObj = new Arrow(Layer2TOPArrow, element)
+        Layer2TOPArrowObj = new Arrow(Layer2TOPArrow, Layer2TOPArrowLine, element)
         element.dbg = Layer2TOPArrowObj.parent
       } else if (element.name == 'Layer 3 TOP Arrow') {
-        Layer3TOPArrowObj = new Arrow(Layer3TOPArrow, element)
+        Layer3TOPArrowObj = new Arrow(Layer3TOPArrow, Layer3TOPArrowLine, element)
         element.dbg = Layer3TOPArrowObj.parent
       }
       element.dbg.element = element
@@ -863,13 +921,13 @@ const Token = React.memo(() => {
     <div
       style={{
         background: 'black',
-        /* borderWidth: 2, borderColor: 'blue',*/ position: 'absolute',
-        height: '100%',
-        aspectRatio: 1.0
+        /* borderWidth: 2, borderColor: 'blue',*/ position: 'relative',
+        width: '100vh',
+        height: '100vh'
       }}
     >
       <p style={{ position: 'absolute', top: 0, left: 0 }}>
-        {timeline.time} {timeline.animTime} {timeline.time - Math.floor(timeline.time)}
+        {timeline.time} {material.visibleLayer.value}
       </p>
       <Canvas orthographic style={{ width: '100%', height: '100%' }} gl={{ antialias: true }}>
         {loaded ? <NesaUI /> : null}
