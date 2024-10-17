@@ -339,12 +339,12 @@ var layers = quads.map((quad, quadi) => {
 
       for (var pos of points.vertices) {
         addSphere(new THREE.Vector3(pos[0], pos[1], pos[2]), 0, 0.0)
-        ballSections.push(quadi)
       }
     }
   }
 
   ballIndex = ballIndex.map((n) => n - minDistance + quadi * 10.0) // (2 - quadi) * 10.0)
+  ballSections = ballIndex.map((_n) => quadi)
   geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
   geom.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3))
   geom.setAttribute('ballIndex', new THREE.BufferAttribute(new Float32Array(ballIndex), 1))
@@ -401,7 +401,7 @@ class Arrow {
         'position',
         new THREE.BufferAttribute(new Float32Array(points.vertices), 3)
       )
-      headGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs), 2))
+      headGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs.map), 2))
 
       this.uvmax = 0.0
       points.uvs.forEach((uv: number, i: number) => {
