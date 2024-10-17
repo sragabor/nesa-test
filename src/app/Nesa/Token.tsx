@@ -401,7 +401,7 @@ class Arrow {
         'position',
         new THREE.BufferAttribute(new Float32Array(points.vertices), 3)
       )
-      headGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs.map), 2))
+      headGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(points.uvs), 2))
 
       this.uvmax = 0.0
       points.uvs.forEach((uv: number, i: number) => {
